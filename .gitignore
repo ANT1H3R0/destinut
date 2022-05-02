@@ -1,0 +1,8 @@
+node_modules/*
+config.json
+emojiservers.json
+firebase.json
+mods.json
+localDb.json
+manifest/*
+names.json
