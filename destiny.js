@@ -196,7 +196,7 @@ module.exports = {
      *  image: 'url'
      * }} weapon object with weapon info
      */
-    async generate_instanced_weapon_embed(name, weapon, emojiCache, uninstanced = false) {
+    async generate_instanced_weapon_embed(name, weapon, emojiCache, uninstanced = false, id = '') {
         let description = `${weapon.description}`
         let d2gunsmith = `https://d2gunsmith.com/w/${weapon.hash}?s=`;
         let perkItemsList = []
@@ -272,8 +272,19 @@ module.exports = {
             description += `\n${weapon.masterwork}`;
         if (weapon.hasOwnProperty('masterwork_hash'))
             d2gunsmith += weapon.masterwork_hash;
-        if (weapon.hasOwnProperty('tracker'))
-            description += `\n${weapon.tracker}`;
+        if (id != '') {
+            const {membershipType, membershipId, _} = await this.get_user_data(id);
+            const instance = await this.GetItem(id, membershipType, membershipId, weapon.itemInstanceId, '304,305,309,310');
+            const objectives = instance.plugObjectives.data.objectivesPerPlug;
+            for (const [hash, obj] of Object.entries(objectives)) {
+                const obj_def = await this.get_item_with_hash('DestinyInventoryItemDefinition', hash);
+                if (obj_def.displayProperties.name.endsWith('Tracker')) {
+                    description += `\n**${obj_def.displayProperties.name}: ${obj[0].progress}**`;
+                    break;
+                }
+            }
+        }
+            // description += `\n${weapon.tracker}`;
         if (weapon.hasOwnProperty('stats')) {
             let stats = weapon.stats
             let statStr = '';

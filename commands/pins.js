@@ -11,7 +11,7 @@ let generate_menu = async (interaction, weapon, subcommand, user, emojiCache) =>
                 await interaction.editReply({ content: 'No rolls of that weapon in your vault or on any of your characters!', components: [] });
                 return;
             }
-            const weapon_embed = await destiny.generate_instanced_weapon_embed(weapon.name, vault[0], emojiCache);
+            const weapon_embed = await destiny.generate_instanced_weapon_embed(weapon.name, vault[0], emojiCache, false, user.id);
             if (weapon_embed.title == 'Error') {
                 await interaction.editReply({ embeds: [weapon_embed] });
                 return;
@@ -44,7 +44,7 @@ let generate_menu = async (interaction, weapon, subcommand, user, emojiCache) =>
                 await interaction.editReply({ content: 'User has no such pinned item!', components: [] });
                 return;
             }
-            const pinned_embed = await destiny.generate_instanced_weapon_embed(pinned.name, pinned, emojiCache);
+            const pinned_embed = await destiny.generate_instanced_weapon_embed(pinned.name, pinned, emojiCache, false, user.id);
             const bungie_name = await destiny.GetCurrentBungieNetUser(user.id).then(user => user.displayName);
             await interaction.editReply({ content: `${bungie_name}'s ${weapon.name}:`, embeds: [pinned_embed], components: [] });
             return;
@@ -217,7 +217,7 @@ module.exports = {
                     collector.stop();
                     return;
             }
-            const weapon_embed = await destiny.generate_instanced_weapon_embed(weapon.name, vault[position], emojiCache);
+            const weapon_embed = await destiny.generate_instanced_weapon_embed(weapon.name, vault[position], emojiCache, false, user.id);
             const navRow = new MessageActionRow()
                 .addComponents(
                     new MessageButton()
