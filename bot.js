@@ -16,6 +16,16 @@ const db = firebase.database();
 
 var ref = db.ref('/');
 
+// get clarity weapon formulas - icemourne you are a godsend
+if (!fs.existsSync('weapon_formulas.json')) {
+	fs.writeFileSync('weapon_formulas.json', '{}');
+}
+fetch('https://raw.githubusercontent.com/Ice-mourne/Database-for-Clarity/main/Database/weapon_formulas.json').then(async r => {
+	console.log(`weapon formulas get status: ${r.status}`);
+	let js = await r.json();
+	fs.writeFileSync('weapon_formulas.json', JSON.stringify(js));
+});
+
 const destiny = require('./destiny');
 
 const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_EMOJIS_AND_STICKERS] });
