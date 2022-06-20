@@ -36,6 +36,7 @@ const stat_defs = {
     3022301683: 'Charge Rate',
     3736848092: 'Guard Endurance',
     1345609583: 'Aim Assist',
+    2714457168: 'Airborne Effectiveness',
     3555269338: 'Zoom',
     2715839340: 'Recoil Direction'
 }
@@ -275,12 +276,14 @@ module.exports = {
         if (id != '') {
             const {membershipType, membershipId, _} = await this.get_user_data(id);
             const instance = await this.GetItem(id, membershipType, membershipId, weapon.itemInstanceId, '304,305,309,310');
-            const objectives = instance.plugObjectives.data.objectivesPerPlug;
-            for (const [hash, obj] of Object.entries(objectives)) {
-                const obj_def = await this.get_item_with_hash('DestinyInventoryItemDefinition', hash);
-                if (obj_def.displayProperties.name.endsWith('Tracker')) {
-                    description += `\n**${obj_def.displayProperties.name}: ${obj[0].progress}**`;
-                    break;
+            if (instance != null) {
+                const objectives = instance.plugObjectives.data.objectivesPerPlug;
+                for (const [hash, obj] of Object.entries(objectives)) {
+                    const obj_def = await this.get_item_with_hash('DestinyInventoryItemDefinition', hash);
+                    if (obj_def.displayProperties.name.endsWith('Tracker')) {
+                        description += `\n**${obj_def.displayProperties.name}: ${obj[0].progress}**`;
+                        break;
+                    }
                 }
             }
         }
@@ -308,6 +311,7 @@ module.exports = {
                 'Charge Time',
                 'Draw Time',
                 'Aim Assist',
+                'Airborne Effectiveness',
                 'Zoom',
                 'Recoil Direction'
             ]
@@ -382,6 +386,7 @@ module.exports = {
 
         let embed = new MessageEmbed()
             .setTitle(displayProperties.name)
+            .setURL(`https://www.light.gg/db/vendors/${vendor.vendor.data.vendorHash}`)
             .setDescription(displayProperties.description)
             .setColor(color)
             .setImage(`https://bungie.net${displayProperties.largeIcon}`)
@@ -659,7 +664,7 @@ module.exports = {
                 // console.log(item);
                 for (const [hash, stat] of Object.entries(item.stats.stats)) {
                     // console.log(`hash: ${hash}, value: ${stat.value}`);
-                    if (hash == 1345609583 || hash == 3555269338 || hash == 2715839340) { // ['1345609583', '3555269338', '2715839340'].includes(hash)
+                    if (hash == 1345609583 || hash == 3555269338 || hash == 2715839340 || hash == 2714457168) { // ['1345609583', '3555269338', '2715839340'].includes(hash)
                         stats[stat_defs[hash]] = stat.value;
                     }
                 }
