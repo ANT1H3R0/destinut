@@ -44,7 +44,7 @@ module.exports = {
                 await i.deferUpdate();
                 const name = i.values[0];
                 const wep = weapons[i.values[0]];
-                let weaponEmbed = await destiny.generate_instanced_weapon_embed(name, wep, emojiCache) //.then(emb => emb);
+                let weaponEmbed = await destiny.generate_instanced_weapon_embed(name, wep, emojiCache, false, interaction.user.id) //.then(emb => emb);
                 await i.editReply({ embeds: [weaponEmbed] }); // , components: []
                 // collector.stop();
 			}

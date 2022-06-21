@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, italic } = require('@discordjs/builders');
+const { SlashCommandBuilder } = require('@discordjs/builders');
 const { MessageActionRow, MessageSelectMenu, MessageButton } = require('discord.js');
 const destiny = require('../destiny');
 const { get } = require('../name_db');

@@ -48,7 +48,7 @@ module.exports = {
 
     async get_user(id) {
         let data = fs.readFileSync('./localDb.json');
-        js = JSON.parse(data);
+        js = await JSON.parse(data);
         return js[id];
     },
 
@@ -82,7 +82,7 @@ module.exports = {
     async get_access_token(id) {
         let data = fs.readFileSync('./localDb.json');
         // console.log(data.toString());
-        js = JSON.parse(data);
+        js = await JSON.parse(data);
         return js[id].access_token;
     },
 
@@ -274,16 +274,26 @@ module.exports = {
         if (weapon.hasOwnProperty('masterwork_hash'))
             d2gunsmith += weapon.masterwork_hash;
         if (id != '') {
-            const {membershipType, membershipId, _} = await this.get_user_data(id);
-            const instance = await this.GetItem(id, membershipType, membershipId, weapon.itemInstanceId, '304,305,309,310');
-            if (instance != null) {
-                const objectives = instance.plugObjectives.data.objectivesPerPlug;
-                for (const [hash, obj] of Object.entries(objectives)) {
-                    const obj_def = await this.get_item_with_hash('DestinyInventoryItemDefinition', hash);
-                    if (obj_def.displayProperties.name.endsWith('Tracker')) {
-                        description += `\n**${obj_def.displayProperties.name}: ${obj[0].progress}**`;
-                        break;
+            if (!uninstanced) {
+                const {membershipType, membershipId, _} = await this.get_user_data(id);
+                const instance = await this.GetItem(id, membershipType, membershipId, weapon.itemInstanceId, '304,305,309,310');
+                if (instance != null) {
+                    const objectives = instance.plugObjectives.data.objectivesPerPlug;
+                    for (const [hash, obj] of Object.entries(objectives)) {
+                        const obj_def = await this.get_item_with_hash('DestinyInventoryItemDefinition', hash);
+                        if (obj_def.displayProperties.name.endsWith('Tracker')) {
+                            description += `\n**${obj_def.displayProperties.name}: ${obj[0].progress}**`;
+                            break;
+                        }
                     }
+                }
+            }
+            let wishlist = await this.get_user(id).then(user => user.wishlist);
+            if (wishlist) {
+                if (wishlist.hasOwnProperty(weapon.hash)) {
+                    var wishlist_wep = wishlist[weapon.hash];
+                    let compare = await this.compare_rolls(wishlist_wep, weapon);
+                    description += `\n**This roll is a ${compare}/5 match to your wishlist roll**`;
                 }
             }
         }
@@ -330,8 +340,9 @@ module.exports = {
                 description += `\n**Falloff Distance (Selected Perks): ${range}m**`;
             }
         }
-        if (!d2gunsmith.includes('undefined'))
-            description += `\n[D2Gunsmith Link](${d2gunsmith})`;
+        if (!d2gunsmith.includes('undefined')) {
+            description += `\n[D2Gunsmith Link](${d2gunsmith}/)`;
+        }
         weaponEmbed.setDescription(description);
         return weaponEmbed;
     },
@@ -512,6 +523,8 @@ module.exports = {
                                 weapons[name].masterwork = masterwork;
                                 weapons[name].masterwork_hash = masterwork_hash;
                             }
+                            // compare to wishlist
+                            // name += ` ()`
                         }
                         break;
                     case 2:
@@ -715,6 +728,14 @@ module.exports = {
         await ref.child(id).child('pinned').child(weapon.hash).set(weapon);
     },
 
+    async set_wishlist(id, weapon) {
+        // let user = await this.get_user(id);
+        // if (!user.hasOwnProperty('wishlist')) {
+        //     await ref.child(id).push({'wishlist': {}});
+        // }
+        await ref.child(id).child('wishlist').child(weapon.hash).set(weapon);
+    },
+
     async calc_range(weaponType, range_stat, zoom, rangefinder = false) {
         let category, zrm_tier;
         if (weaponType == '120') {
@@ -731,5 +752,35 @@ module.exports = {
         let range = ((weapon_info.base_min + range_stat * weapon_info.vpp) * (weapon_info.zrm + (zoom - zrm_tier) / 10)) * (rangefinder ? 1.1 : 1)
         range = Math.round(range * 100) / 100;
         return range;
+    },
+
+    async compare_rolls(weapon1, weapon2) {
+        let count = 0;
+        let perks1 = [];
+        let perks2 = [];
+        for (let [column, perks] of Object.entries(weapon1.perks.plugs)) {
+            if (column == '5') break;
+            let column_perks = []
+            if (perks == null) continue;
+            for (let perk of Object.values(perks)) {
+                column_perks.push(perk.plugItemHash);
+            }
+            perks1.push(column_perks);
+        }
+        for (let [column, perks] of Object.entries(weapon2.perks.plugs)) {
+            if (column == '5') break;
+            let column_perks = []
+            if (perks == null) continue;
+            for (let perk of Object.values(perks)) {
+                column_perks.push(perk.plugItemHash);
+            }
+            perks2.push(column_perks);
+        }
+        for (let i = 0; i < 4; i++) {
+            let matching_perks = perks2[i].filter(element => perks1[i].includes(element.toString()));
+            if (matching_perks.length > 0) count++;
+        }
+        if (weapon1.masterwork_hash == weapon2.masterwork_hash) count++;
+        return count;
     }
 }
