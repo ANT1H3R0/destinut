@@ -1,12 +1,35 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
-const { MessageActionRow, MessageSelectMenu } = require('discord.js');
+const { MessageActionRow, MessageSelectMenu, MessageEmbed } = require('discord.js');
 const destiny = require('../destiny');
 
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('banshee')
-		.setDescription("View Banshee's legendary weapon offerings."),
+		.setDescription("View Banshee-44's legendary weapon offerings.")
+        .addSubcommand(subcommand =>
+            subcommand
+                .setName('sales')
+                .setDescription('View the items Banshee-44 is currently selling.')
+        )
+        .addSubcommand(subcommand =>
+            subcommand
+                .setName('pool')
+                .setDescription('View all of the legendary weapons Banshee-44 is capable of selling.')    
+        ),
     execute: destiny.authed(async (interaction) => {
+        if (interaction.options.getSubcommand() == 'pool') {
+            await interaction.deferReply();
+
+            let embed = new MessageEmbed()
+                .setTitle('Banshee-44')
+                .setURL('https://www.light.gg/db/vendors/672118013/')
+                .setDescription('Banshee-44 can sell the following legendary weapons:')
+                .setColor(0x00FFFF)
+                .setImage('attachment://grid-672118013.png')
+                .setThumbnail('https://www.bungie.net/common/destiny2_content/icons/5fb7fa47a8f1dd04538017d289f4f910.png');
+            await interaction.editReply({ embeds: [ embed ], files: ['./grid-672118013.png'] });
+            return;
+        }
         await interaction.deferReply();
         const emojiCache = interaction.client.emojis.cache;
 

@@ -1,12 +1,35 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
-const { MessageActionRow, MessageSelectMenu } = require('discord.js');
+const { MessageActionRow, MessageSelectMenu, MessageEmbed } = require('discord.js');
 const destiny = require('../destiny');
 
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('xur')
-		.setDescription("View Xur's exotic and legendary offerings."),
+		.setDescription("View Xur's exotic and legendary offerings.")
+        .addSubcommand(subcommand =>
+            subcommand
+                .setName('sales')
+                .setDescription('View the items Xûr is currently selling.')
+        )
+        .addSubcommand(subcommand =>
+            subcommand
+                .setName('pool')
+                .setDescription('View all of the legendary weapons Xûr is capable of selling.')    
+        ),
     execute: destiny.authed(async (interaction) => {
+        if (interaction.options.getSubcommand() == 'pool') {
+            await interaction.deferReply();
+
+            let embed = new MessageEmbed()
+                .setTitle('Xûr')
+                .setURL('https://www.light.gg/db/vendors/2190858386/')
+                .setDescription('Xûr can sell the following legendary weapons:')
+                .setColor(0x00FFFF)
+                .setImage('attachment://grid-2190858386.png')
+                .setThumbnail('https://www.bungie.net/common/destiny2_content/icons/5659e5fc95912c079962376dfe4504ab.png');
+            await interaction.editReply({ embeds: [ embed ], files: ['./grid-2190858386.png'] });
+            return;
+        }
         const d = new Date();
         let day = d.getDay();
         let hour = d.getHours();

@@ -5,6 +5,7 @@ const { update, get, getMod } = require('./name_db');
 const firebase = require('firebase-admin');
 const fetch = require('node-fetch');
 const { CronJob } = require('cron');
+const { dl } = require('./create_vendor_image');
 // const destiny = require('./destiny');
 
 const serviceAccount = require('./firebase.json');
@@ -144,6 +145,11 @@ async function update_manifest() {
 	}
 	if (process.env.UPDATENAMES != 'false')
 		update();
+		
+	
+	console.log('Updating vendor inventory images...');
+	await dl('2190858386', 2);
+	await dl('672118013', 4);
 }
 
 // update manifest

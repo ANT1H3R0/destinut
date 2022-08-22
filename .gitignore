@@ -8,3 +8,6 @@ manifest/*
 names.json
 weapon_formulas.json
 destinut.service
+guns/*
+back.png
+grid-*.png
