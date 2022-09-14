@@ -144,6 +144,7 @@ module.exports = {
             console.log('endpoint unreachable or access token expired, refreshing...');
             await this.refresh_access_token(id);
         }
+        return null;
     },
 
     // API Functions
@@ -442,32 +443,6 @@ module.exports = {
                         type = 'Weapons:';
                         if (plugData.hasOwnProperty(itemKey)) { //name == 'Hawkmoon' || name == "Dead Man's Tale" || tier != "Exotic"
                             const masterwork_hash = vendor.itemComponents.sockets.data[itemKey].sockets[7].plugHash;
-                            // const stat_defs = {
-                            //     155624089: 'Stability',
-                            //     1240592695: 'Range',
-                            //     943549884: 'Handling',
-                            //     4188031367: 'Reload Speed',
-                            //     3614673599: 'Blast Radius',
-                            //     2523465841: 'Velocity',
-                            //     1591432999: 'Accuracy',
-                            //     1842278586: 'Shield Duration',
-                            //     2961396640: 'Charge Time',
-                            //     4043523819: 'Impact',
-                            //     447667954: 'Draw Time',
-                            //     4284893193: 'Rounds Per Minute',
-                            //     3871231066: 'Magazine',
-                            //     3614673599: 'Blast Radius',
-                            //     2523465841: 'Velocity',
-                            //     209426660: 'Guard Resistance',
-                            //     925767036: 'Ammo Capacity',
-                            //     2762071195: 'Guard Efficiency',
-                            //     2837207746: 'Swing Speed',
-                            //     3022301683: 'Charge Rate',
-                            //     3736848092: 'Guard Endurance',
-                            //     1345609583: 'Aim Assist',
-                            //     3555269338: 'Zoom',
-                            //     2715839340: 'Recoil Direction'
-                            // }
                             let masterwork;
                             if (masterwork_hash)
                                 await this.get_item_with_hash('DestinyInventoryItemDefinition', masterwork_hash).then(item2 => {
@@ -724,8 +699,10 @@ module.exports = {
         return weapons;
     },
 
-    async set_pin(id, weapon) {
-        await ref.child(id).child('pinned').child(weapon.hash).set(weapon);
+    async set_pin(id, weapon, slot = 0) {
+        console.log(slot);
+        let pinned = slot == 0 ? 'pinned' : `pinned-${slot}`;
+        await ref.child(id).child(pinned).child(weapon.hash).set(weapon);
     },
 
     async set_wishlist(id, weapon) {

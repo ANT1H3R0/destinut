@@ -34,9 +34,11 @@ let generate_menu = async (interaction, weapon, subcommand, user, emojiCache) =>
             await interaction.editReply({ content: 'Please select a roll, then click Pin:', embeds: [weapon_embed], components: [navRow] });
             break;
         case 'view':
-            let pinned = await destiny.get_user(user.id).then(user => user.pinned);
+            const slot = interaction.options.getInteger('slot');
+            const pin_slot = slot ? `pinned-${slot}` : 'pinned';
+            let pinned = await destiny.get_user(user.id).then(user => user[pin_slot]);
             if (!pinned) {
-                await interaction.editReply({ content: 'User has no pinned items!', components: [] });
+                await interaction.editReply({ content: 'User has no pinned items in that slot!', components: [] });
                 return;
             }
             pinned = pinned[weapon.hash];
@@ -66,6 +68,12 @@ module.exports = {
                         .setRequired(true)
                         .setAutocomplete(true)
                 )
+                .addIntegerOption(option =>
+                    option
+                        .setName('slot')
+                        .setDescription('Pinned weapon slot (default: 0)')
+                        .setRequired(false)
+                )
         )
         .addSubcommand(subcommand =>
             subcommand
@@ -84,6 +92,12 @@ module.exports = {
                         .setDescription('User to inspect (default: self)')
                         .setRequired(false)
                 )
+                .addIntegerOption(option =>
+                    option
+                        .setName('slot')
+                        .setDescription('Pinned weapon slot (default: 0)')
+                        .setRequired(false)
+                )
         ),
     execute: destiny.authed(async (interaction) => {
         await interaction.deferReply();
@@ -92,13 +106,15 @@ module.exports = {
         var vault;
         var position = 0;
         var weapon = {};
+        const slot = interaction.options.getInteger('slot');
         let name = interaction.options.getString('name');
         if (!name) { // '/pin view' called with no name option
-            const pinned = await destiny.get_user(user.id).then(user => user.pinned);
+            const pin_slot = slot ? `pinned-${slot}` : 'pinned';
+            const pinned = await destiny.get_user(user.id).then(user => user[pin_slot]);
             let weapons = [[]];
             let count = 0;
             let list = 0;
-            if (!pinned) { await interaction.editReply('User has no pinned items!'); return; }
+            if (!pinned) { await interaction.editReply('User has no pinned items in that slot!'); return; }
             for (const [hash, weapon] of Object.entries(pinned)) {
                 if ((count + 1) % 24 == 0 && count != Object.keys(pinned).length - 1) {
                     weapons[list].push({
@@ -212,7 +228,8 @@ module.exports = {
                     position = (position + 1) % vault.length;
                     break;
                 case 'confirm':
-                    await destiny.set_pin(i.user.id, vault[position]);
+                    const pin_slot = slot ? slot : 0;
+                    await destiny.set_pin(i.user.id, vault[position], pin_slot);
                     await i.editReply({ content: 'Pinned roll set.', components: [] });
                     collector.stop();
                     return;
