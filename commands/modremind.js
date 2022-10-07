@@ -23,6 +23,8 @@ module.exports = {
             interaction.editReply('No mod found with that name!');
             return;
         }
+        if (!fs.existsSync('./reminders.json'))
+            fs.writeFileSync('./reminders.json', '{}');
         let f = fs.readFileSync('./reminders.json');
         let js = JSON.parse(f);
         if (!(hash in Object.keys(js)))
