@@ -29,6 +29,9 @@ fetch('https://raw.githubusercontent.com/Ice-mourne/Database-for-Clarity/main/Da
 
 const destiny = require('./destiny');
 
+// init wishlist
+destiny.Wishlist.getInstance('https://raw.githubusercontent.com/48klocs/dim-wish-list-sources/master/voltron.txt');
+
 const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_EMOJIS_AND_STICKERS] });
 
 client.commands = new Collection();
@@ -82,7 +85,7 @@ client.once('ready', async () => {
 		// console.log('done');
 	}
 
-	let modReminder = new CronJob('00 01 17 * * *', remind);
+	let modReminder = new CronJob('0 13 * * *', remind);
 
 	modReminder.start();
 

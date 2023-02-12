@@ -42,6 +42,69 @@ const stat_defs = {
 }
 
 module.exports = {
+    Roll: class {
+        constructor(roll) {
+            switch (typeof roll) {
+                case 'string': // dim wishlist string
+                    this.hash = roll.substring(17, roll.indexOf('&'));
+                    this.perks = roll.substring(roll.indexOf('&') + 7).split(',');
+                    this.perks = this.perks.map(r => [r]);
+                    break;
+                default: // weapon object (need to standardize!)
+                    this.hash = roll.hash;
+                    this.perks = [];
+                    let plugs = [];
+                    if (Array.isArray(roll.perks.plugs)) {
+                        roll.perks.plugs.forEach(p => plugs.push(p));
+                    } else {
+                        Object.values(roll.perks.plugs).forEach(p => plugs.push(p));
+                    }
+                    plugs.forEach(slot => {
+                        if (slot !== null) {
+                            this.perks.push(slot.map(p => p.plugItemHash.toString()));
+                        }
+                    });
+            }
+        }
+
+        equals(roll) {
+            return this.hash === roll.hash && this.perks.every(slot => slot.some(perk => roll.perks.some(rollslot => rollslot.includes(perk))));
+        }
+    },
+
+    Wishlist: class {
+        static instance;
+        constructor(src) {
+            let txt = '';
+            if (src.startsWith('http')) {
+                fetch(src).then(async r => {
+                    txt = await r.text();
+                    this.rolls = txt.split('\n');
+                    this.rolls = this.rolls.filter(e => e.startsWith('dimwishlist'));
+                    this.rolls = this.rolls.map(r => new module.exports.Roll(r));
+                });
+                return;
+            } else {
+                txt = fs.readFileSync(src, {encoding:'utf8', flag:'r'});
+            }
+            this.rolls = txt.split('\n');
+            this.rolls = this.rolls.filter(e => e.startsWith('dimwishlist'));
+            this.rolls = this.rolls.map(r => new module.exports.Roll(r));
+        }
+
+        contains(roll) {
+            return this.rolls.some(r => r.equals(roll));
+        }
+
+        static getInstance(src) {
+            if (module.exports.Wishlist.instance) {
+                return module.exports.Wishlist.instance;
+            }
+            module.exports.Wishlist.instance = new module.exports.Wishlist(src);
+            return module.exports.Wishlist.instance;
+        }
+    },
+
     async db_set(child, data) {
         await ref.child(child).set(data);
     },
@@ -297,6 +360,7 @@ module.exports = {
                     description += `\n**This roll is a ${compare}/5 match to your wishlist roll**`;
                 }
             }
+            description += `\n**This roll is ${this.Wishlist.getInstance().contains(new this.Roll(weapon)) ? '' : 'not '} a community wishlist roll**`;
         }
             // description += `\n${weapon.tracker}`;
         if (weapon.hasOwnProperty('stats')) {
