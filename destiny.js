@@ -134,7 +134,7 @@ module.exports = {
             if (!(interaction.user.id in js) || !js[interaction.user.id].authed) {
                 const embed = new MessageEmbed()
                     .setTitle('Authorization')
-                    .setDescription(`You must [log in](http://ec2-52-23-165-132.compute-1.amazonaws.com/?id=${interaction.user.id}) before using bot commands.`);
+                    .setDescription(`You must [log in](https://www.destinut.com/?id=${interaction.user.id}) before using bot commands.`);
                 interaction.user.send({embeds: [embed]});
                 interaction.reply({ content: 'Check DMs for log-in instructions.', ephemeral: true });
                 return;
