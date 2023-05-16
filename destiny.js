@@ -130,10 +130,11 @@ module.exports = {
                 return;
             }
             let data = fs.readFileSync('./localDb.json');
-            if (!(interaction.user.id in JSON.parse(data))) {
+            let js = JSON.parse(data);
+            if (!(interaction.user.id in js) || !js[interaction.user.id].authed) {
                 const embed = new MessageEmbed()
                     .setTitle('Authorization')
-                    .setDescription(`You must [log in](https://destinut.herokuapp.com/?id=${interaction.user.id}) before using bot commands.`);
+                    .setDescription(`You must [log in](http://ec2-52-23-165-132.compute-1.amazonaws.com/?id=${interaction.user.id}) before using bot commands.`);
                 interaction.user.send({embeds: [embed]});
                 interaction.reply({ content: 'Check DMs for log-in instructions.', ephemeral: true });
                 return;
@@ -166,6 +167,13 @@ module.exports = {
             }
         }).then(res => res);
         console.log(res.status);
+        if (res.status === 400) {
+            console.log('user needs to log in again');
+            await ref.child(id).update({
+                'authed': false
+            });
+            return;
+        }
         js = await res.json();
         // let user = await this.get_user(id);
         await ref.child(id).update({
