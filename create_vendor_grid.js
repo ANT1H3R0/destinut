@@ -21,9 +21,11 @@ module.exports = {
             dim *= 96;
         else
             dim = (Math.floor(dim) + 1)*96;
+        dim = Math.floor(dim);
+        console.log(dim);
 
         // create blank background same size as grid
-        const canvas = createCanvas(dim, dim);
+        const canvas = createCanvas(960, 960);
         const ctx = canvas.getContext('2d');
         ctx.fillStyle = "rgba(255, 255, 255, 0)";
         ctx.fillRect(0, 0, dim, dim);

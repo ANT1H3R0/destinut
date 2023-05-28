@@ -161,8 +161,8 @@ async function update_manifest() {
 		
 	
 	console.log('Updating vendor inventory images...');
-	// await dl('2190858386', 2);
-	// await dl('672118013', 4);
+	await dl('2190858386', 2);
+	await dl('672118013', 4);
 }
 
 // update manifest
