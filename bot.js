@@ -27,6 +27,16 @@ fetch('https://raw.githubusercontent.com/Ice-mourne/Database-for-Clarity/main/Da
 	fs.writeFileSync('weapon_formulas.json', JSON.stringify(js));
 });
 
+// get dim season information - thank you dim
+if (!fs.existsSync('watermark-to-season.json')) {
+	fs.writeFileSync('watermark-to-season.json', '{}');
+}
+fetch('https://raw.githubusercontent.com/DestinyItemManager/DIM/master/src/data/d2/watermark-to-season.json').then(async r => {
+	console.log(`dim season info get status: ${r.status}`);
+	let js = await r.json();
+	fs.writeFileSync('watermark-to-season.json', JSON.stringify(js));
+});
+
 const destiny = require('./destiny');
 
 // init wishlist
@@ -151,8 +161,8 @@ async function update_manifest() {
 		
 	
 	console.log('Updating vendor inventory images...');
-	await dl('2190858386', 2);
-	await dl('672118013', 4);
+	// await dl('2190858386', 2);
+	// await dl('672118013', 4);
 }
 
 // update manifest
